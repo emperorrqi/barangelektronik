@@ -5,13 +5,41 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    container_name: php_app
+    restart: always
     ports:
       - "8090:80"
+    volumes:
+      - ./app:/var/www/html
     environment:
-      - DB_HOST=${DB_HOST}
-      - DB_USER=${DB_USER}
-      - DB_PASS=${DB_PASS}
-      - DB_NAME=${DB_NAME}
-      - DB_PORT=${DB_PORT}
-    env_file:
-      - .env
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
+      DB_USER: ${DB_USER}
+      DB_PASS: ${DB_PASS}
+      DB_NAME: ${DB_NAME}
+      DB_SSL_CA: ${DB_SSL_CA}
+    depends_on:
+      - php
+
+  php:
+    image: php:8.2-apache
+    container_name: php_engine
+    restart: always
+    volumes:
+      - ./app:/var/www/html
+    environment:
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
+      DB_USER: ${DB_USER}
+      DB_PASS: ${DB_PASS}
+      DB_NAME: ${DB_NAME}
+      DB_SSL_CA: ${DB_SSL_CA}
+
+    # Install mysqli & SSL inside PHP container (Aiven requires SSL)
+    command: >
+      bash -c "
+      apt update &&
+      apt install -y default-mysql-client ca-certificates &&
+      docker-php-ext-install mysqli &&
+      apache2-foreground
+      "
