@@ -1,28 +1,20 @@
 <?php
-require_once "config.php";
+$DB_HOST = getenv("DB_HOST");
+$DB_USER = getenv("DB_USER");
+$DB_PASS = getenv("DB_PASS");
+$DB_NAME = getenv("DB_NAME");
+$DB_PORT = getenv("DB_PORT");
 
-// =============================
-// KONEKSI MENGGUNAKAN SSL AIVEN
-// =============================
-$mysqli = mysqli_init();
-
-// Aiven mewajibkan SSL, tetapi tanpa sertifikat lokal → NON-VERIFIED SSL
-mysqli_options($mysqli, MYSQLI_OPT_SSL_VERIFY_SERVER_CERT, false);
-
-// Set SSL (tanpa sertifikat, Aiven menerima)
-$mysqli->ssl_set(NULL, NULL, NULL, NULL, NULL);
-
-// Melakukan koneksi
-if (!$mysqli->real_connect(
+// Koneksi ke MySQL Aiven
+$mysqli = new mysqli(
     $DB_HOST,
     $DB_USER,
     $DB_PASS,
     $DB_NAME,
-    $DB_PORT,
-    NULL,
-    MYSQLI_CLIENT_SSL
-)) {
-    die("Gagal koneksi ke database Aiven: " . mysqli_connect_error());
-}
+    $DB_PORT
+);
 
+if ($mysqli->connect_errno) {
+    die("Koneksi ke database gagal: " . $mysqli->connect_error);
+}
 ?>
